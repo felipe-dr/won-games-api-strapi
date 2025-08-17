@@ -19,7 +19,19 @@ export default {
     },
     menu: {
       logo: Icon,
-    }
+    },
+    theme: {
+      light: {},
+      dark: {
+        colors: {
+          primary100: "#030415",
+          primary600: "#f231a5",
+          primary700: "#f231a5",
+          neutral0: "#0d102f",
+          neutral100: "#030415",
+        },
+      },
+    },
   },
   bootstrap() {},
 };
