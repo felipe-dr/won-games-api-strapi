@@ -26,11 +26,32 @@ async function getGameInfo(slug) {
     short_description,
     rating: ratingElement
       ? ratingElement
-        .getAttribute('xlink:href')
-        .replace(/_/g, '')
-        .replace('#', '')
+          .getAttribute('xlink:href')
+          .replace(/_/g, '')
+          .replace('#', '')
       : 'BR0',
   };
+}
+
+async function getByName(name, entityService) {
+  const item = await strapi.service(entityService).find({
+    filters: { name },
+  });
+
+  return item.results.length > 0 ? item.results[0] : null;
+}
+
+async function create(name, entityService) {
+  const item = await getByName(name, entityService);
+
+  if (!item) {
+    await strapi.service(entityService).create({
+      data: {
+        name,
+        slug: slugify(name, { strict: true, lower: true }),
+      },
+    });
+  }
 }
 
 export default factories.createCoreService('api::game.game', () => ({
@@ -41,24 +62,16 @@ export default factories.createCoreService('api::game.game', () => ({
       data: { products },
     } = await axios.get(gogApiUrl);
 
-    products[2].developers.map(async (developer) => {
-      await strapi.service("api::developer.developer").create({
-        data: {
-          name: developer,
-          slug: slugify(developer, { strict: true, lower: true }),
-        },
-      });
+    products[0].developers.map(async (developer) => {
+      await create(developer, 'api::developer.developer');
     });
 
-    products[2].publishers.map(async (publisher) => {
-      await strapi.service("api::publisher.publisher").create({
-        data: {
-          name: publisher,
-          slug: slugify(publisher, { strict: true, lower: true }),
-        },
-      });
+    products[0].publishers.map(async (publisher) => {
+      await create(publisher, 'api::publisher.publisher');
     });
 
-    // console.log(await getGameInfo(products[2].slug));
+    products[0].genres.map(async ({ name }) => {
+      await create(name, 'api::category.category');
+    });
   },
 }));
