@@ -5,6 +5,7 @@
 import { factories } from '@strapi/strapi';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
+import qs from 'querystring';
 import slugify from 'slugify';
 
 const gameService = 'api::game.game';
@@ -202,19 +203,19 @@ async function createGames(products) {
   );
 }
 
-
-
 export default factories.createCoreService(gameService, () => ({
   async populate(params) {
     try {
-      const gogApiUrl = `https://catalog.gog.com/v1/catalog?limit=48&order=desc%3Atrending`;
+      const gogApiUrl = `https://catalog.gog.com/v1/catalog?${qs.stringify(
+        params
+      )}`;
 
       const {
         data: { products },
       } = await axios.get(gogApiUrl);
 
-      await createManyToManyData([products[1], products[2]]);
-      await createGames([products[1], products[2]]);
+      await createManyToManyData(products);
+      await createGames(products);
     } catch (error) {
       console.log('populate:', Exception(error));
     }
